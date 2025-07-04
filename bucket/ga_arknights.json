@@ -14,3 +14,4 @@
         "Set-Content -Path \"$persist_dir\\config\\gui.json\" -Value $configContent"
     ]
 }
+
