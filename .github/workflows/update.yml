@@ -49,7 +49,7 @@ jobs:
           fi
           
           # Check if target package file exists
-          target_pkg_path="${temp_dir}/${target_pkg}.json"
+          target_pkg_path="${temp_dir}/bucket/${target_pkg}.json"
           if [ ! -f "$target_pkg_path" ]; then
             echo "Warning: Target package file not found: $target_pkg_path"
             continue
