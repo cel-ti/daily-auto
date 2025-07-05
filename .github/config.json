@@ -1,0 +1,14 @@
+{
+    "source" : "https://github.com/cel-ti/maa-bucket",
+    "pkg" : {
+        "ga_1999_cn" : {
+            "target" : "m9a"
+        },
+        "ga_1999_na" : {
+            "target" : "m9a"
+        },
+        "ga_arknights" : {
+            "target" : "maa"
+        }
+    }
+}

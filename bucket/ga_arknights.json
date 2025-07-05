@@ -5,7 +5,7 @@
     "hash": "2cef381786e14e203c6fbe6c170580893f96eb2fb7b092fa7a1bd65248974778",
     "url": "https://github.com/MaaAssistantArknights/MaaAssistantArknights/releases/download/v5.18.2/MAA-v5.18.2-win-x64.zip",
     "checkver": "github",
-    "persist": ["config", "data"],
+    "persist": ["config", "data", "gaconfig"],
     "license": "AGPL-3.0",
     "post_install": [
         "if (!(Test-Path \"$persist_dir\\config\")) { New-Item -ItemType Directory -Path \"$persist_dir\\config\" }",

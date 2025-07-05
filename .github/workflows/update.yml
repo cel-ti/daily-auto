@@ -1,0 +1,142 @@
+name: Update Packages
+
+on:
+    schedule:
+        - cron: '0 0 */2 * *'  # Run every 2 days
+    workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Read config and update packages
+      id: update_packages
+      run: |
+        # Read config.json
+        source_repo=$(jq -r '.source' .github/config.json)
+        echo "Source repository: $source_repo"
+        
+        # Clone source repository to temp directory
+        temp_dir=$(mktemp -d)
+        echo "Cloning to temporary directory: $temp_dir"
+        
+        git clone "$source_repo" "$temp_dir"
+        if [ $? -ne 0 ]; then
+          echo "Failed to clone repository"
+          exit 1
+        fi
+        
+        has_changes=false
+        updated_packages=()
+        
+        # Process each package
+        for local_pkg in $(jq -r '.pkg | keys[]' .github/config.json); do
+          target_pkg=$(jq -r ".pkg.${local_pkg}.target" .github/config.json)
+          
+          echo "Processing: $local_pkg -> $target_pkg"
+          
+          # Check if local package file exists
+          local_pkg_path="bucket/${local_pkg}.json"
+          if [ ! -f "$local_pkg_path" ]; then
+            echo "Warning: Local package file not found: $local_pkg_path"
+            continue
+          fi
+          
+          # Check if target package file exists
+          target_pkg_path="${temp_dir}/${target_pkg}.json"
+          if [ ! -f "$target_pkg_path" ]; then
+            echo "Warning: Target package file not found: $target_pkg_path"
+            continue
+          fi
+          
+          # Get versions
+          local_version=$(jq -r '.version' "$local_pkg_path")
+          target_version=$(jq -r '.version' "$target_pkg_path")
+          
+          echo "Local version: $local_version, Target version: $target_version"
+          
+          # Compare versions
+          if [ "$local_version" != "$target_version" ]; then
+            echo "Version mismatch detected. Updating $local_pkg..."
+            
+            # Get target package data
+            target_hash=$(jq -r '.hash' "$target_pkg_path")
+            target_url=$(jq -r '.url' "$target_pkg_path")
+            
+            # Update local package file
+            jq --arg version "$target_version" \
+               --arg hash "$target_hash" \
+               --arg url "$target_url" \
+               '.version = $version | .hash = $hash | .url = $url' \
+               "$local_pkg_path" > "${local_pkg_path}.tmp"
+            
+            mv "${local_pkg_path}.tmp" "$local_pkg_path"
+            
+            echo "Updated $local_pkg from $local_version to $target_version"
+            updated_packages+=("$local_pkg ($local_version -> $target_version)")
+            has_changes=true
+          else
+            echo "$local_pkg is already up to date"
+          fi
+        done
+        
+        # Clean up temp directory
+        rm -rf "$temp_dir"
+        
+        # Set output for next step
+        if [ "$has_changes" = true ]; then
+          echo "Changes detected, will commit"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          
+          # Output updated packages for commit message
+          printf '%s\n' "${updated_packages[@]}" | jq -R . | jq -s . > updated_packages.json
+          echo "updated_packages<<EOF" >> $GITHUB_OUTPUT
+          cat updated_packages.json >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        else
+          echo "No changes detected"
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+        fi
+      
+    - name: Commit and push changes
+      if: steps.update_packages.outputs.has_changes == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Add all changed files
+        git add bucket/*.json
+        
+        # Commit changes
+        git commit -m "chore: update packages to latest versions
+        
+        Auto-updated packages from source repository
+        
+        [skip ci]"
+        
+        # Push changes
+        git push
+      
+    - name: Create summary
+      run: |
+        echo "## Package Update Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [[ "${{ steps.update_packages.outputs.has_changes }}" == "true" ]]; then
+          echo "✅ Updates were found and applied" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Updated packages will be committed and pushed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Updated Packages:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.update_packages.outputs.updated_packages }}' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️ No updates were needed - all packages are up to date" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 Source repository: $(cat .github/config.json | jq -r '.source')" >> $GITHUB_STEP_SUMMARY
