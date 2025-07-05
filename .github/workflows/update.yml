@@ -5,6 +5,10 @@ on:
         - cron: '0 0 */2 * *'  # Run every 2 days
     workflow_dispatch:  # Allow manual trigger
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -110,8 +114,15 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
+        # Configure git to handle line endings properly
+        git config --local core.autocrlf input
+        
         # Add all changed files
         git add bucket/*.json
+        
+        # Show what's being committed
+        git status
+        git diff --cached
         
         # Commit changes
         git commit -m "chore: update packages to latest versions
@@ -121,7 +132,7 @@ jobs:
         [skip ci]"
         
         # Push changes
-        git push
+        git push origin HEAD:${{ github.ref_name }}
       
     - name: Create summary
       run: |
