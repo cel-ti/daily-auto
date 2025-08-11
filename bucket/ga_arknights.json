@@ -7,8 +7,7 @@
   "checkver": "github",
   "persist": [
     "config",
-    "data",
-    "gaconfig"
+    "data"
   ],
   "license": "AGPL-3.0",
   "post_install": [
