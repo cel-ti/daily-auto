@@ -9,6 +9,12 @@
         },
         "ga_arknights" : {
             "target" : "maa"
+        },
+        "ga_gf2_cn" : {
+            "target" : "maagf2"
+        },
+        "ga_gf2_gl" : {
+            "target" : "maagf2"
         }
     }
 }
