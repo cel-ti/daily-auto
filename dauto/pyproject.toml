@@ -1,0 +1,33 @@
+[project]
+name = "dauto"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "cel-ti", email = "96926560+cel-ti@users.noreply.github.com" }
+]
+dependencies = [
+    "click>=8.2.1",
+    "zuu>=25.8.2",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dauto"]
+
+[tool.ruff]
+ignore=["E402"]
+
+[project.scripts]
+dauto = "dauto.cli.main:cli"
