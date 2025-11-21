@@ -15,6 +15,9 @@
         },
         "ga_gf2_gl" : {
             "target" : "maagf2"
+        },
+        "ga_ark_global" : {
+            "target" : "maa"
         }
     }
 }
