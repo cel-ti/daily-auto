@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/DarkLingYun/MaaGF2Exilium",
-  "version": "1.16.2",
-  "hash": "c455108219f6f65bd94cc7fb5168d1cc816d2fb34c292884936919d6bd8e0a9b",
-  "url": "https://github.com/DarkLingYun/MaaGF2Exilium/releases/download/v1.16.2/MaaGF2ExiliumGUI-win-x86_64-v1.16.2.zip",
+  "version": "1.16.7",
+  "hash": "401a493941ce6778b12cf4a9da8f566398646463a1d1d109cf1d6db7883c4a43",
+  "url": "https://github.com/DarkLingYun/MaaGF2Exilium/releases/download/v1.16.7/MaaGF2ExiliumGUI-win-x86_64-v1.16.7.zip",
   "license": "MIT",
   "checkver": "github",
   "persist": "config"
